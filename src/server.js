@@ -89,6 +89,49 @@ app.post('/withdraw', verifyIfExistAccountCpf, (request, response) => {
   return response.status(201).send()
 })
 
+app.get('/statement/date', verifyIfExistAccountCpf, (request, response) => {
+  const { customer } = request
+  const { date } = request.query
+
+  const dateFormat = new Date(date + ' 00:00')
+  const statement = customer.statement.filter(
+    (statement) =>
+      statement.created_at.toDateString() ===
+      new Date(dateFormat).toDateString()
+  )
+
+  return response.json(statement)
+})
+
+app.put('/account', verifyIfExistAccountCpf, (request, response) => {
+  const { name } = request.body
+  const { customer } = request
+  customer.name = name
+  return response.status(201).send()
+})
+
+app.get('/account', verifyIfExistAccountCpf, (request, response) => {
+  const { customer } = request
+  return response.json(customer)
+})
+
+app.delete('/account', verifyIfExistAccountCpf, (request, response) => {
+  const { customer } = request
+  const customerIndex = customers.findIndex((item) => item.id === customer.id)
+  if (customerIndex === -1) {
+    return response.status(404).json({ error: 'Customer not found' })
+  }
+  customers.splice(customerIndex, 1)
+  return response.status(204).json()
+})
+
+app.get('/balance', verifyIfExistAccountCpf, (request, response) => {
+  const { customer } = request
+  const balance = getBalance(customer.statement)
+
+  return response.json(balance)
+})
+
 app.get('/courses', (request, response) => {
   const query = request.query
   console.log(query)
